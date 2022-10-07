@@ -24,11 +24,51 @@ int main(int argc, char **argv)
 				mysql_errno(conn), mysql_error(conn));
 		exit (1);
 	} //Inntenta iniciar conexion recien creada, retorna 1 si no pude.
-	err=mysql_query (conn, "SELECT Usuarios.nombre FROM (Usuarios) WHERE Usuarios.Estado= 'Online' ");
-	if (err!=0) {
-		printf ("Error al consultar datos de la base %u %s\n",
-				mysql_errno(conn), mysql_error(conn));
-		exit (1);
-	} //Hace la consulta (Quien online?), 1 si no puede.
-	resultado = mysql_store_result (conn);
-	row = mysql_fetch_row (resultado);
+
+	err = mysql_query(conn, "SELECT * FROM Usuarios");
+	if (err != 0) {
+		printf("Error al consultar datos de la base %u %s\n",
+			mysql_errno(conn), mysql_error(conn));
+		exit(1);
+	}//consulta la tabla con todos los datos, retorna 1 si no puede
+	resultado = mysql_store_result(conn); //Tabla de memoria virtual con todos los datos
+
+	row = mysql_fetch_row(resultado);
+	if (row == NULL)
+		printf("No se han obtenido datos en la consulta\n");
+	else
+		while (row != NULL) {
+			// la columna 0 contiene una palabra -->id
+			// la convertimos a entero 
+			id = atoi(row[0]);
+			// las columnas 1 y 2 y 3 contienen nombre, Contraseña y Estado 
+			printf("nombre: %s, Contraseña: %s, Estado: %d\n", row[1], row[2],row[3], id);
+			// obtenemos la siguiente fila
+			row = mysql_fetch_row(resultado);
+		}
+
+	// construimos la consulta SQL
+	strcpy(consulta, "SELECT Usuarios.nombre FROM (Usuarios) WHERE Usuarios.Estado= 'Online'");
+	strcat(consulta, Estado);
+	strcat(consulta, "'");
+	// hacemos la consulta 
+	err = mysql_query(conn, consulta);
+	if (err != 0) {
+		printf("Error al consultar datos de la base %u %s\n",
+			mysql_errno(conn), mysql_error(conn));
+		exit(1);
+	}
+	resultado = mysql_store_result(conn);
+	row = mysql_fetch_row(resultado);
+	if (row == NULL)
+		printf("No se han obtenido datos en la consulta\n");
+	else
+		
+		printf("Personas Online: %s\n", row[0]);
+	mysql_close(conn);
+	exit(0);
+}
+
+
+
+	
